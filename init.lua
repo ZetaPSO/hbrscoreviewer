@@ -37,7 +37,7 @@ local function parse_hbr_banner(banner_text)
     
     parsed.total = string.match(banner_end_part, "%d+")
     parsed.dar_boost = string.match(banner_end_part, "%d+ %(%+(%d+)")
-    parsed.rank = string.match(banner_end_part, "Ranking: (..?)")
+    parsed.rank = string.match(banner_end_part, "Ranking: (..?)") or "?"
     
     return parsed
 end
