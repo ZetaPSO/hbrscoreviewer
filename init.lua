@@ -2,7 +2,7 @@ local function get_banner_text()
     local addr = pso.read_u32(0x00a46c78)
     
     if addr ~= 0 then
-        local text = pso.read_wstr(addr + 0x1c, 0x0400)
+        local text = pso.read_wstr(addr + 0x1c, 0x0200)
         return text
     end
     
