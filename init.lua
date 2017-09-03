@@ -23,7 +23,7 @@ local function parse_hbr_banner(banner_text)
     
     banner_text = clean_pso_text(banner_text)
     local banner_end_part = string.match(banner_text, "(Total Points.+)$")
-    local banner_mid_part = string.sub(banner_text, 35, -(#banner_end_part + 1 + 3))
+    local banner_mid_part = string.sub(banner_text, 14, -(#banner_end_part + 1 + 3))
     
     for split in string.gmatch(banner_mid_part, "[^,]+") do
         local quest = string.match(split, "^  (.+):")
@@ -53,7 +53,7 @@ local function present()
     
     if counter % update_interval == 0 then
         local banner = get_banner_text()
-        if string.find(banner, "Hunters Boost Completion") then
+        if string.find(banner, "HBR Counts") then
             hbr = parse_hbr_banner(banner)
         end
         counter = 0
