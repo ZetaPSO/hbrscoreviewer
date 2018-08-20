@@ -1,4 +1,10 @@
+local core_mainmenu = require('core_mainmenu')
+local window_open
 local hbr_rank = { 0, 12, 18, 24, 30, 36, 42, 48, 54, 60, 72, 96, 132, 156, 180, 204, 228, 252, 276, 300 }
+
+local function hbr_window_toggle()
+    window_open = not window_open
+end
 
 local function next_rank(total)
     local total_hbr = tonumber(total)
@@ -65,6 +71,7 @@ local counter = 0
 local update_interval = 30 * 5
 
 local function present()
+    if (not window_open) then return; end
     counter = counter + 1
 
     imgui.Begin("HBR+")
@@ -105,10 +112,11 @@ local function present()
 end
 
 local function init()
+    core_mainmenu.add_button('HBR+', hbr_window_toggle)
     return
     {
         name = "HBR+",
-        version = "0.0.2",
+        version = "0.0.3",
         author = "esc & zeta",
         description = "Displays your HBR score. Type /hbr to update it.",
         present = present
