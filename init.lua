@@ -1,11 +1,25 @@
+local hbr_rank = { 0, 12, 18, 24, 30, 36, 42, 48, 54, 60, 72, 96, 132, 156, 180, 204, 228, 252, 276, 300 }
+
+local function next_rank(total)
+    local total_hbr = tonumber(total)
+
+    for i = 1,#hbr_rank do
+        if hbr_rank[i] >= (total_hbr+1) then
+            return hbr_rank[i]
+        end
+    end
+
+    return 1
+end
+
 local function get_banner_text()
     local addr = pso.read_u32(0x00a46c78)
-    
+
     if addr ~= 0 then
-        local text = pso.read_wstr(addr + 0x1c, 0x0200)
+    local text = pso.read_wstr(addr + 0x1c, 0x0200)
         return text
     end
-    
+
     return ""
 end
 
@@ -18,13 +32,15 @@ local function parse_hbr_banner(banner_text)
         total = 0,
         dar_boost = 0,
         rank = "NO RANK",
-        quests = {}
+        quests = {},
+        next = 0,
+        tnr = 0
     }
-    
+
     banner_text = clean_pso_text(banner_text)
     local banner_end_part = string.match(banner_text, "(Total Points.+)$")
     local banner_mid_part = string.sub(banner_text, 14, -(#banner_end_part + 1 + 3))
-    
+  
     for split in string.gmatch(banner_mid_part, "[^,]+") do
         local quest = string.match(split, "^  (.+):")
         local score = tonumber(string.match(split, "(%d+)$") or "0")
@@ -38,7 +54,9 @@ local function parse_hbr_banner(banner_text)
     parsed.total = string.match(banner_end_part, "%d+")
     parsed.dar_boost = string.match(banner_end_part, "%d+ %(%+(%d+)")
     parsed.rank = string.match(banner_end_part, "Ranking: (..?)") or "?"
-    
+    parsed.next = next_rank(parsed.total)
+    parsed.tnr = parsed.next - parsed.total
+
     return parsed
 end
 
@@ -48,9 +66,9 @@ local update_interval = 30 * 5
 
 local function present()
     counter = counter + 1
-    
-    imgui.Begin("HBR score")
-    
+
+    imgui.Begin("HBR+")
+
     if counter % update_interval == 0 then
         local banner = get_banner_text()
         if string.find(banner, "HBR Counts") then
@@ -58,24 +76,37 @@ local function present()
         end
         counter = 0
     end
-    
+
     if hbr ~= nil then
         for k, v in pairs(hbr.quests) do
-            imgui.Text(v.quest .. ": " .. v.score)
+            local diff = v.score - hbr.next
+            local score_show = v.score .. " (+" .. diff .. ") " .. v.quest
+
+            if diff >= 0 then imgui.TextColored(0, 255, 0, 1, score_show)
+            else imgui.TextColored(255, 0, 0, 1, score_show) end
         end
-        imgui.Text("Total: " .. hbr.total .. " (+" .. hbr.dar_boost .. " DAR)")
-        imgui.Text("Rank: " .. hbr.rank)
+
+        local dar_boost = tonumber(hbr.dar_boost)
+        local rdr_boost = dar_boost - 25
+        if dar_boost > 25 then
+            imgui.Text("Total: " .. hbr.total .. " (+25 DAR / +" .. rdr_boost .. " RDR)")
+        else
+            imgui.Text("Total: " .. hbr.total .. " (+" .. dar_boost .. " DAR)")
+        end
+        if hbr.tnr > 0 then
+            imgui.Text("Rank: " .. hbr.rank .. " | Next: " .. hbr.next .. " (-" .. hbr.tnr .. ")")
+        end
     end
-    
+
     imgui.End()
 end
 
 local function init()
     return
     {
-        name = "hbrscoreviewer",
-        version = "0.0.1",
-        author = "esc",
+        name = "HBR+",
+        version = "0.0.2",
+        author = "esc & zeta",
         description = "Displays your HBR score. Type /hbr to update it.",
         present = present
     }
