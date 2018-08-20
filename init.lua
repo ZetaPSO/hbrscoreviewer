@@ -78,10 +78,15 @@ local function present()
     end
 
     if hbr ~= nil then
+        local finished = tonumber(hbr.total) >= hbr_rank[#hbr_rank - 1]
         for k, v in pairs(hbr.quests) do
-            local diff = v.score - hbr.next
-            if diff >= 0 then imgui.TextColored(0, 255, 0, 1, v.score .. " (+" .. diff .. ") " .. v.quest)
-            else imgui.TextColored(255, 0, 0, 1, v.score .. " (" .. diff .. ") " .. v.quest) end
+            if finished then
+                imgui.TextColored(0.5, 0.5, 0.5, 1, v.score .. " | " .. v.quest)
+            else
+                local diff = v.score - hbr.next
+                if diff >= 0 then imgui.TextColored(0, 255, 0, 1, v.score .. " (+" .. diff .. ") " .. v.quest)
+                else imgui.TextColored(255, 0, 0, 1, v.score .. " (" .. diff .. ") " .. v.quest) end
+            end
         end
 
         local dar_boost = tonumber(hbr.dar_boost)
